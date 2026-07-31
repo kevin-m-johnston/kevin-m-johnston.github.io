@@ -15,9 +15,11 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
-
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -27,30 +29,12 @@ jobs:
         with:
           node-version: 22
           cache: npm
-          cache-dependency-path: |
-            marine/package-lock.json
-            tools/package-lock.json
 
-      - name: Build Marine page
-        working-directory: marine
-        run: |
-          npm ci
-          npm run build
+      - name: Install dependencies
+        run: npm ci
 
-      - name: Build Tools page
-        working-directory: tools
-        run: |
-          npm ci
-          npm run build
-
-      - name: Assemble Pages website
-        shell: bash
-        run: |
-          mkdir -p site/marine site/tools
-
-          cp index.html site/index.html
-          cp -R marine/dist/. site/marine/
-          cp -R tools/dist/. site/tools/
+      - name: Build entire website
+        run: npm run build
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
@@ -58,7 +42,8 @@ jobs:
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: site
+          path: dist
 
       - name: Deploy GitHub Pages
+        id: deployment
         uses: actions/deploy-pages@v4
