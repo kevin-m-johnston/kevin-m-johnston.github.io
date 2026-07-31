@@ -26,30 +26,31 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            marine/package-lock.json
+            tools/package-lock.json
 
       - name: Build Marine page
         working-directory: marine
         run: |
-          npm install
+          npm ci
           npm run build
 
       - name: Build Tools page
         working-directory: tools
         run: |
-          npm install
+          npm ci
           npm run build
 
       - name: Assemble Pages website
         shell: bash
         run: |
           mkdir -p site/marine site/tools
+
           cp index.html site/index.html
           cp -R marine/dist/. site/marine/
           cp -R tools/dist/. site/tools/
-
-          # Copy any other root-level static files here as needed.
-          # Example:
-          # cp styles.css site/styles.css
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
