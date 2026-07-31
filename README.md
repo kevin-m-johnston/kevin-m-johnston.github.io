@@ -49,3 +49,4 @@ The one build command produces all three pages in `dist/`.
 Commit the repository and push to `main`. The workflow in `.github/workflows/deploy.yml` installs once, builds once, and deploys the complete `dist` folder to GitHub Pages.
 
 In GitHub, ensure **Settings → Pages → Source** is set to **GitHub Actions**.
+
