@@ -6,16 +6,17 @@ import react from "@vitejs/plugin-react";
 
 const rootDirectory = path.dirname(fileURLToPath(import.meta.url));
 const toolsDataFile = path.resolve(rootDirectory, "src/features/tools/data/tools.json");
+const githubProjectsDataFile = path.resolve(rootDirectory, "src/features/github/data/repositories.json");
 
-function localToolsEditor(): Plugin {
+function jsonEditor(endpoint: string, dataFile: string, expectedName: string): Plugin {
   return {
-    name: "local-tools-editor",
+    name: `local-${expectedName}-editor`,
     configureServer(server) {
-      server.middlewares.use("/api/tools", async (request, response) => {
+      server.middlewares.use(endpoint, async (request, response) => {
         response.setHeader("Content-Type", "application/json; charset=utf-8");
         try {
           if (request.method === "GET") {
-            response.end(await fs.readFile(toolsDataFile, "utf8"));
+            response.end(await fs.readFile(dataFile, "utf8"));
             return;
           }
           if (request.method === "PUT") {
@@ -24,10 +25,10 @@ function localToolsEditor(): Plugin {
             const parsed: unknown = JSON.parse(Buffer.concat(chunks).toString("utf8"));
             if (!Array.isArray(parsed)) {
               response.statusCode = 400;
-              response.end(JSON.stringify({ error: "Expected an array of tools." }));
+              response.end(JSON.stringify({ error: `Expected an array of ${expectedName}.` }));
               return;
             }
-            await fs.writeFile(toolsDataFile, `${JSON.stringify(parsed, null, 2)}\n`, "utf8");
+            await fs.writeFile(dataFile, `${JSON.stringify(parsed, null, 2)}\n`, "utf8");
             response.end(JSON.stringify({ saved: true }));
             return;
           }
@@ -44,14 +45,19 @@ function localToolsEditor(): Plugin {
 
 export default defineConfig({
   base: "/",
-  plugins: [react(), localToolsEditor()],
+  plugins: [
+    react(),
+    jsonEditor("/api/tools", toolsDataFile, "tools"),
+    jsonEditor("/api/github-projects", githubProjectsDataFile, "repositories")
+  ],
   server: { open: true },
   build: {
     rollupOptions: {
       input: {
         home: path.resolve(rootDirectory, "index.html"),
         marine: path.resolve(rootDirectory, "marine/index.html"),
-        tools: path.resolve(rootDirectory, "tools/index.html")
+        tools: path.resolve(rootDirectory, "tools/index.html"),
+        github: path.resolve(rootDirectory, "github/index.html")
       }
     }
   }

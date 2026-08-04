@@ -3,7 +3,8 @@ import type { ReactNode } from "react";
 const links = [
   { href: "/", label: "Home" },
   { href: "/marine/", label: "Marine" },
-  { href: "/tools/", label: "Tools" }
+  { href: "/tools/", label: "Tools" },
+  { href: "/github/", label: "GitHub Projects" }
 ];
 
 export function SiteShell({ children }: { children: ReactNode }) {
